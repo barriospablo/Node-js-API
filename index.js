@@ -1,8 +1,10 @@
 const express = require("express");
 const logger = require("./loggerMiddleware");
+const cors = require("cors");
 const app = express();
-//parsea lo que se manda en la request para tenerlo en el body
-app.use(express.json());
+
+app.use(express.json()); //parsea lo que se manda en la request para tenerlo en el body
+app.use(cors());
 app.use(logger);
 
 let notes = [
@@ -27,8 +29,8 @@ app.get("/api/notes", (req, res) => {
 
 app.get("/api/notes/:id", (req, res) => {
   const id = Number(req.params.id);
-  console.log(id);
   const note = notes.find((n) => n.id === id);
+
   if (note) {
     res.json(note);
   } else {
@@ -37,12 +39,14 @@ app.get("/api/notes/:id", (req, res) => {
 });
 app.delete("/api/notes/:id", (req, res) => {
   const id = Number(req.params.id);
+
   notes = notes.filter((note) => note.id !== id);
   res.status(204).end();
 });
 
 app.post("/api/notes", (req, res) => {
   const note = req.body;
+
   if (!note || !note.content) {
     return res.status(400).json({
       error: "note.content is missing",
