@@ -1,7 +1,9 @@
 const express = require("express");
+const logger = require("./loggerMiddleware");
 const app = express();
 //parsea lo que se manda en la request para tenerlo en el body
 app.use(express.json());
+app.use(logger);
 
 let notes = [
   { id: 1, content: "Soy el content", date: "2020", important: true },
