@@ -1,16 +1,19 @@
+require("./mongo");
+
 const express = require("express");
 const logger = require("./loggerMiddleware");
-const cors = require("cors");
 const app = express();
+const cors = require("cors");
+const Note = require("./models/Note");
 
 app.use(express.json()); //parsea lo que se manda en la request para tenerlo en el body
 app.use(cors());
 app.use(logger);
 
 let notes = [
-  { id: 1, content: "Soy el content", date: "2020", important: true },
-  { id: 2, content: "Soy segundo content", date: "2021", important: false },
-  { id: 3, content: "Soy tercer content", date: "2022", important: false },
+  // { id: 1, content: "Soy el content", date: "2020", important: true },
+  // { id: 2, content: "Soy segundo content", date: "2021", important: false },
+  // { id: 3, content: "Soy tercer content", date: "2022", important: false },
 ];
 
 //Con HTTP
@@ -24,7 +27,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/notes", (req, res) => {
-  res.json(notes);
+  Note.find({}).then((notes) => {
+    res.json(notes);
+  });
 });
 
 app.get("/api/notes/:id", (req, res) => {
