@@ -6,16 +6,18 @@ const logger = require("./loggerMiddleware");
 const app = express();
 const cors = require("cors");
 const Note = require("./models/Note");
+const notFound = require("./middleware/notFound");
+const handleError = require("./middleware/handleError");
 
 app.use(express.json()); //parsea lo que se manda en la request para tenerlo en el body
 app.use(cors());
 app.use(logger);
 
-let notes = [
-  // { id: 1, content: "Soy el content", date: "2020", important: true },
-  // { id: 2, content: "Soy segundo content", date: "2021", important: false },
-  // { id: 3, content: "Soy tercer content", date: "2022", important: false },
-];
+// let notes = [
+//   // { id: 1, content: "Soy el content", date: "2020", important: true },
+//   // { id: 2, content: "Soy segundo content", date: "2021", important: false },
+//   // { id: 3, content: "Soy tercer content", date: "2022", important: false },
+// ];
 
 //Con HTTP
 // const app = http.createServer((req, res) => {
@@ -46,8 +48,6 @@ app.get("/api/notes/:id", (req, res, next) => {
     })
     .catch((err) => {
       next(err);
-      console.log(err.message);
-      res.status(503).end();
     });
 });
 app.delete("/api/notes/:id", (req, res) => {
@@ -91,16 +91,9 @@ app.put("/api/notes/:id", (req, res, next) => {
   });
 });
 
-app.use((err, req, res, next) => {
-  console.error(err);
-  console.log(err.name);
-  res.status(400).send({ error: "bad id" });
-  if (err.name === "CasteError") {
-    res.status(400).end();
-  } else {
-    res.status(500).end();
-  }
-});
+app.use(notFound);
+
+app.use(handleError);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
