@@ -1,3 +1,4 @@
+require("dotenv").config();
 require("./mongo");
 
 const express = require("express");
@@ -33,14 +34,20 @@ app.get("/api/notes", (req, res) => {
 });
 
 app.get("/api/notes/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const note = notes.find((n) => n.id === id);
+  const { id } = req.params;
 
-  if (note) {
-    res.json(note);
-  } else {
-    res.status(404).end();
-  }
+  Note.findById(id)
+    .then((note) => {
+      if (note) {
+        return res.json(note);
+      } else {
+        return res.status(404).end();
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(503).end();
+    });
 });
 app.delete("/api/notes/:id", (req, res) => {
   const id = Number(req.params.id);
@@ -57,18 +64,15 @@ app.post("/api/notes", (req, res) => {
       error: "note.content is missing",
     });
   }
-  const ids = notes.map((note) => note.id);
-  const maxId = Math.max(...ids);
-
-  const newNote = {
-    id: maxId + 1,
+  const newNote = new Note({
     content: note.content,
-    important: typeof note.important !== "undefined" ? note.important : false,
     date: new Date().toISOString(),
-  };
-  notes = [...notes, newNote];
+    important: note.important || false,
+  });
 
-  res.status(201).json(newNote);
+  newNote.save().then((savedNote) => {
+    res.json(savedNote);
+  });
 });
 
 const PORT = 3001;
