@@ -33,7 +33,7 @@ app.get("/api/notes", (req, res) => {
   });
 });
 
-app.get("/api/notes/:id", (req, res) => {
+app.get("/api/notes/:id", (req, res, next) => {
   const { id } = req.params;
 
   Note.findById(id)
@@ -45,15 +45,20 @@ app.get("/api/notes/:id", (req, res) => {
       }
     })
     .catch((err) => {
-      console.log(err);
+      next(err);
+      console.log(err.message);
       res.status(503).end();
     });
 });
 app.delete("/api/notes/:id", (req, res) => {
-  const id = Number(req.params.id);
-
-  notes = notes.filter((note) => note.id !== id);
-  res.status(204).end();
+  const { id } = req.params;
+  Note.findByIdAndDelete(id)
+    .then((note) => {
+      res.status(204).end();
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
 
 app.post("/api/notes", (req, res) => {
@@ -74,8 +79,30 @@ app.post("/api/notes", (req, res) => {
     res.json(savedNote);
   });
 });
+app.put("/api/notes/:id", (req, res, next) => {
+  const { id } = req.params;
+  const note = req.body;
+  const newNoteInfo = {
+    content: note.content,
+    important: note.important,
+  };
+  Note.findByIdAndUpdate(id, newNoteInfo, { new: true }).then((result) => {
+    res.json(result);
+  });
+});
 
-const PORT = 3001;
+app.use((err, req, res, next) => {
+  console.error(err);
+  console.log(err.name);
+  res.status(400).send({ error: "bad id" });
+  if (err.name === "CasteError") {
+    res.status(400).end();
+  } else {
+    res.status(500).end();
+  }
+});
+
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
