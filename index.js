@@ -1,6 +1,8 @@
 require("dotenv").config();
 require("./mongo");
+require("./instrument.js");
 
+const Sentry = require("@sentry/node");
 const express = require("express");
 const logger = require("./loggerMiddleware");
 const app = express();
@@ -12,6 +14,7 @@ const handleError = require("./middleware/handleError");
 app.use(express.json()); //parsea lo que se manda en la request para tenerlo en el body
 app.use(cors());
 app.use(logger);
+app.use(express.static("images")); //servir contenido estatico de una carpeta
 
 // let notes = [
 //   // { id: 1, content: "Soy el content", date: "2020", important: true },
@@ -86,10 +89,14 @@ app.put("/api/notes/:id", (req, res, next) => {
     content: note.content,
     important: note.important,
   };
+  //sin el new: true el findByIdAndUpdate nos devuelve el valor que encuentra con el id
+  //con el new : true el findByIdAndUpdate nos devuelve el valor del nuevo objeto
   Note.findByIdAndUpdate(id, newNoteInfo, { new: true }).then((result) => {
     res.json(result);
   });
 });
+
+Sentry.setupExpressErrorHandler(app);
 
 app.use(notFound);
 
