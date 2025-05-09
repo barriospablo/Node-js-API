@@ -1,22 +1,7 @@
-const supertest = require("supertest");
 const mongoose = require("mongoose");
-const { app, server } = require("../index");
+const { server } = require("../index");
 const Note = require("../models/Note");
-
-const api = supertest(app);
-
-const initialNotes = [
-  {
-    content: "Soy una nota",
-    important: true,
-    date: new Date(),
-  },
-  {
-    content: "Soy otra nota",
-    important: true,
-    date: new Date(),
-  },
-];
+const { initialNotes, api, getAllCOntentFromNotes } = require("./helpers");
 
 beforeEach(async () => {
   await Note.deleteMany({});
@@ -41,8 +26,7 @@ test("notes are returned as json", async () => {
 });
 
 test("the first note is about note", async () => {
-  const response = await api.get("/api/notes");
-  const contents = response.body.map((note) => note.content);
+  const contents = await getAllCOntentFromNotes();
   expect(contents).toContain("Soy una nota");
 });
 test("a valid  note can be added", async () => {
