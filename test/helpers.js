@@ -15,7 +15,11 @@ const initialNotes = [
 ];
 const getAllCOntentFromNotes = async () => {
   const response = await api.get("/api/notes");
-  return response.body.map((note) => note.content);
+  // return response.body.map((note) => note.content);
+  return {
+    content: response.body.map((note) => note.content),
+    response,
+  };
 };
 
 module.exports = { initialNotes, api, getAllCOntentFromNotes };
