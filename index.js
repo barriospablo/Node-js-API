@@ -10,6 +10,7 @@ const cors = require("cors");
 const Note = require("./models/Note");
 const notFound = require("./middleware/notFound");
 const handleError = require("./middleware/handleError");
+const userRouter = require("./controllers/users");
 
 app.use(express.json()); //parsea lo que se manda en la request para tenerlo en el body
 app.use(cors());
@@ -32,10 +33,15 @@ app.get("/", (req, res) => {
   res.send("<h1>Hello World</h1>");
 });
 
-app.get("/api/notes", (req, res) => {
-  Note.find({}).then((notes) => {
-    res.json(notes);
-  });
+app.get("/api/notes", async (req, res) => {
+  //with promises
+  // Note.find({}).then((notes) => {
+  //   res.json(notes);
+  // });
+
+  //with await
+  const notes = await Note.find({});
+  res.json(notes);
 });
 
 app.get("/api/notes/:id", (req, res, next) => {
@@ -53,7 +59,7 @@ app.get("/api/notes/:id", (req, res, next) => {
       next(err);
     });
 });
-app.delete("/api/notes/:id", (req, res) => {
+app.delete("/api/notes/:id", (req, res, next) => {
   const { id } = req.params;
   Note.findByIdAndDelete(id)
     .then((note) => {
@@ -64,7 +70,7 @@ app.delete("/api/notes/:id", (req, res) => {
     });
 });
 
-app.post("/api/notes", (req, res) => {
+app.post("/api/notes", async (req, res) => {
   const note = req.body;
 
   if (!note || !note.content) {
@@ -78,9 +84,15 @@ app.post("/api/notes", (req, res) => {
     important: note.important || false,
   });
 
-  newNote.save().then((savedNote) => {
+  // newNote.save().then((savedNote) => {
+  //   res.json(savedNote);
+  // });
+  try {
+    const savedNote = await newNote.save();
     res.json(savedNote);
-  });
+  } catch (error) {
+    next(error);
+  }
 });
 app.put("/api/notes/:id", (req, res, next) => {
   const { id } = req.params;
@@ -97,7 +109,7 @@ app.put("/api/notes/:id", (req, res, next) => {
 });
 
 Sentry.setupExpressErrorHandler(app);
-
+app.use("/api/users", userRouter);
 app.use(notFound);
 
 app.use(handleError);
