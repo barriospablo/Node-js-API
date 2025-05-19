@@ -7,7 +7,11 @@ describe.only("create user", () => {
     await User.deleteMany({});
 
     const passwordHash = await bcrypt.hash("pswd", 10);
-    const user = new User({ username: "PablinhoTests", passwordHash });
+    const user = new User({
+      username: "PablinhoTests",
+      name: "Pablo",
+      passwordHash,
+    });
 
     await user.save();
   });
