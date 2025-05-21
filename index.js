@@ -11,6 +11,7 @@ const Note = require("./models/Note");
 const notFound = require("./middleware/notFound");
 const handleError = require("./middleware/handleError");
 const userRouter = require("./controllers/users");
+const loginRouter = require("./controllers/login.js");
 const User = require("./models/User.js");
 
 app.use(express.json()); //parsea lo que se manda en la request para tenerlo en el body
@@ -121,6 +122,8 @@ app.put("/api/notes/:id", (req, res, next) => {
 
 Sentry.setupExpressErrorHandler(app);
 app.use("/api/users", userRouter);
+app.use("/api/login", loginRouter);
+
 app.use(notFound);
 
 app.use(handleError);
