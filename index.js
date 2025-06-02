@@ -77,7 +77,8 @@ app.delete("/api/notes/:id", (req, res, next) => {
 });
 
 app.post("/api/notes", async (req, res) => {
-  const { content, important = false, userId } = req.body;
+  const { content, important = false } = req.body;
+
   let token = "";
 
   const authorization = req.get("authorization");
@@ -88,12 +89,17 @@ app.post("/api/notes", async (req, res) => {
 
   let decodedToken = {};
 
-  decodedToken = jwt.verify(token, process.env.SECRET);
+  try {
+    decodedToken = jwt.verify(token, process.env.SECRET);
+  } catch (error) {
+    console.log(error);
+  }
 
   if (!token || !decodedToken.id) {
     return res.status.apply(401).json({ error: "token missing or invalid" });
   }
 
+  const { id: userId } = decodedToken;
   const user = await User.findById(userId);
 
   if (!content) {
