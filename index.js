@@ -13,7 +13,7 @@ const handleError = require("./middleware/handleError");
 const userRouter = require("./controllers/users");
 const loginRouter = require("./controllers/login.js");
 const User = require("./models/User.js");
-const jwt = require("jsonwebtoken");
+const userExtractor = require("./middleware/userExtractor.js");
 
 app.use(express.json()); //parsea lo que se manda en la request para tenerlo en el body
 app.use(cors());
@@ -76,30 +76,11 @@ app.delete("/api/notes/:id", (req, res, next) => {
     });
 });
 
-app.post("/api/notes", async (req, res) => {
+app.post("/api/notes", userExtractor, async (req, res) => {
   const { content, important = false } = req.body;
 
-  let token = "";
+  const { userId } = req;
 
-  const authorization = req.get("authorization");
-
-  if (authorization && authorization.toLocaleLowerCase().startsWith("bearer")) {
-    token = authorization.substring(7);
-  }
-
-  let decodedToken = {};
-
-  try {
-    decodedToken = jwt.verify(token, process.env.SECRET);
-  } catch (error) {
-    console.log(error);
-  }
-
-  if (!token || !decodedToken.id) {
-    return res.status.apply(401).json({ error: "token missing or invalid" });
-  }
-
-  const { id: userId } = decodedToken;
   const user = await User.findById(userId);
 
   if (!content) {
